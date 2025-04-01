@@ -11,6 +11,7 @@
         <header>
             <h1>StepTrack Fitness</h1>
             <p id="current-date"></p>
+            <button id="theme-toggle">Toggle Theme</button>
         </header>
 
         <div class="dashboard">
@@ -20,6 +21,7 @@
                     <span id="step-count">0</span>
                     <span>steps</span>
                 </div>
+                <input type="number" id="step-input" placeholder="Enter steps manually">
                 <div class="step-controls">
                     <button id="add-steps">+ Add Steps</button>
                     <button id="reset-steps">Reset</button>
@@ -50,7 +52,7 @@
         <div class="exercise-section">
             <h2>Exercise Calculator</h2>
             <div class="exercise-form">
-                <input type="text" id="exercise-input" placeholder="Enter exercise (e.g. running)">
+                <input type="text" id="exercise-input" placeholder="Enter exercise">
                 <input type="number" id="duration-input" placeholder="Duration (minutes)">
                 <button id="calculate-exercise">Calculate</button>
             </div>
@@ -63,6 +65,7 @@
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <script type="module" src="api.js"></script>
+    <script type="module" src="app.js"></script>
 </body>
 </html>
