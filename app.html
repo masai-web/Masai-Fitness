@@ -1,71 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>StepTrack Fitness</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
     <div class="container">
-        <header>
-            <h1>StepTrack Fitness</h1>
-            <p id="current-date"></p>
-            <button id="theme-toggle">Toggle Theme</button>
-        </header>
+      <header>
+        <h1>StepTrack Fitness</h1>
+        <p id="current-date"></p>
+        <button id="theme-toggle">Toggle Theme</button>
+      </header>
 
-        <div class="dashboard">
-            <div class="stats-card">
-                <h2>Today's Steps</h2>
-                <div class="step-counter">
-                    <span id="step-count">0</span>
-                    <span>steps</span>
-                </div>
-                <input type="number" id="step-input" placeholder="Enter steps manually">
-                <div class="step-controls">
-                    <button id="add-steps">+ Add Steps</button>
-                    <button id="reset-steps">Reset</button>
-                </div>
-            </div>
-
-            <div class="stats-card">
-                <h2>Calories Burned</h2>
-                <div class="calorie-counter">
-                    <span id="calorie-count">0</span>
-                    <span>calories</span>
-                </div>
-            </div>
-
-            <div class="stats-card">
-                <h2>Daily Goal</h2>
-                <div class="goal-progress">
-                    <progress id="goal-progress" value="0" max="100"></progress>
-                    <span id="goal-percentage">0%</span>
-                </div>
-                <div class="goal-controls">
-                    <input type="number" id="goal-input" placeholder="Set step goal">
-                    <button id="set-goal">Set Goal</button>
-                </div>
-            </div>
+      <div class="dashboard">
+        <div class="stats-card">
+          <h2>Today's Steps</h2>
+          <div class="step-counter">
+            <span id="step-count">0</span> steps
+          </div>
+          <input type="number" id="step-input" placeholder="Enter steps manually" />
+          <div class="step-controls">
+            <button id="add-steps">+ Add Steps</button>
+            <button id="reset-steps">Reset</button>
+          </div>
         </div>
 
-        <div class="exercise-section">
-            <h2>Exercise Calculator</h2>
-            <div class="exercise-form">
-                <input type="text" id="exercise-input" placeholder="Enter exercise">
-                <input type="number" id="duration-input" placeholder="Duration (minutes)">
-                <button id="calculate-exercise">Calculate</button>
-            </div>
-            <div id="exercise-results" class="exercise-results"></div>
+        <div class="stats-card">
+          <h2>Calories Burned</h2>
+          <div class="calorie-counter">
+            <span id="calorie-count">0</span> calories
+          </div>
         </div>
 
-        <div class="history-section">
-            <h2>Activity History</h2>
-            <canvas id="steps-chart"></canvas>
+        <div class="stats-card">
+          <h2>Daily Goal</h2>
+          <div class="goal-progress">
+            <progress id="goal-progress" value="0" max="100"></progress>
+            <span id="goal-percentage">0%</span>
+          </div>
+          <div class="goal-controls">
+            <input type="number" id="goal-input" placeholder="Set step goal" />
+            <button id="set-goal">Set Goal</button>
+          </div>
         </div>
+      </div>
+
+      <div class="exercise-section">
+        <h2>Exercise Calculator</h2>
+        <div class="exercise-form">
+          <input type="text" id="exercise-input" placeholder="Enter exercise" />
+          <input type="number" id="duration-input" placeholder="Duration (minutes)" />
+          <button id="calculate-exercise">Calculate</button>
+        </div>
+        <div id="exercise-results" class="exercise-results"></div>
+      </div>
+
+      <div class="history-section">
+        <h2>Activity History</h2>
+        <canvas id="steps-chart"></canvas>
+      </div>
     </div>
 
-    <script type="module" src="api.js"></script>
-    <script type="module" src="app.js"></script>
-</body>
+    <!-- Include Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Load our app as a module -->
+    <script type="module" src="./app.js"></script>
+  </body>
 </html>

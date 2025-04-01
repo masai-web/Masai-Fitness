@@ -1,3 +1,10 @@
 {
-    "exercises": "module"
+    "exercises": [
+      { "id": 1, "name": "Running", "duration": 30, "calories": 250 },
+      { "id": 2, "name": "Jump Rope", "duration": 15, "calories": 150 },
+      { "id": 3, "name": "Cycling", "duration": 45, "calories": 400 },
+      { "id": 4, "name": "Swimming", "duration": 60, "calories": 500 },
+      { "id": 5, "name": "Walking", "duration": 20, "calories": 80 }
+    ],
+    "history": []
   }
