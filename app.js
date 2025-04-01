@@ -1,5 +1,5 @@
 // app.js
-import { fetchExercises, saveActivity, fetchHistory } from '/api.js';
+import { fetchExercises, saveActivity, fetchHistory } from './api.js';
 
 const stepCountEl = document.getElementById('step-count');
 const calorieCountEl = document.getElementById('calorie-count');
