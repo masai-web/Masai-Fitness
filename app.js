@@ -1,4 +1,3 @@
-// app.js
 import { fetchExercises, saveActivity, fetchHistory } from './api.js';
 
 const stepCountEl = document.getElementById('step-count');
@@ -47,6 +46,8 @@ function initializeChart() {
         ],
       },
       options: {
+        responsive: true,
+        maintainAspectRatio: false,
         scales: {
           y: { beginAtZero: true },
           x: {
@@ -54,8 +55,6 @@ function initializeChart() {
             title: { display: true, text: 'Date' },
           },
         },
-        responsive: true,
-        maintainAspectRatio: false,
       },
     });
   }
@@ -74,29 +73,77 @@ function loadState() {
   }
 }
 
+// Sync data between json-server and localStorage
+async function syncData() {
+  try {
+    const serverData = await fetchHistory();
+    localStorage.setItem('stepTrackState', JSON.stringify(serverData));
+    state.history = serverData;
+  } catch (error) {
+    console.warn('Using offline data from localStorage:', error);
+    const localData = localStorage.getItem('stepTrackState');
+    if (localData) {
+      state.history = JSON.parse(localData);
+    }
+  }
+}
+
+// Save activity to json-server and localStorage
+async function saveActivityToBothStorage(activity) {
+  const localData = JSON.parse(localStorage.getItem('stepTrackState')) || [];
+  localData.push(activity);
+  localStorage.setItem('stepTrackState', JSON.stringify(localData));
+  try {
+    await saveActivity(activity);
+  } catch (error) {
+    console.error('Failed to save activity to API. Saved locally instead:', error);
+  }
+}
+
 // Update UI elements
 function updateUI() {
   stepCountEl.textContent = state.steps;
   calorieCountEl.textContent = state.calories;
-  const progressPercentage = Math.min(Math.round((state.steps / state.dailyGoal) * 100), 100);
-  goalProgressEl.value = progressPercentage;
-  goalPercentageEl.textContent =` ${progressPercentage}%`;
+
+  // Ensure progressPercentage is a valid number
+  let progressPercentage = (state.dailyGoal > 0)
+    ? Math.min(Math.round((state.steps / state.dailyGoal) * 100), 100)
+    : 0;
+
+  if (!isFinite(progressPercentage)) {
+    progressPercentage = 0; // Fallback for invalid calculations
+  }
+
+  goalProgressEl.value = progressPercentage; // Assign only valid values
+  goalPercentageEl.textContent = `${progressPercentage}%`;
 
   updateChart();
 }
 
-// Update the Chart.js chart with activity history data
+// Update Chart.js chart with activity history data
 function updateChart() {
   if (stepsChart) {
-    // Using the last 7 entries from history
     const last7 = state.history.slice(-7);
-    stepsChart.data.labels = last7.map((item) => item.date);
-    stepsChart.data.datasets[0].data = last7.map((item) => item.steps);
+    stepsChart.data.labels = last7.map(item => item.date || 'Unknown');
+    stepsChart.data.datasets[0].data = last7.map(item => item.steps || 0);
     stepsChart.update();
   }
 }
 
-// Display the current date in the header
+// Reset steps and log activity
+async function resetSteps() {
+  const today = new Date().toLocaleDateString();
+  const newActivity = { date: today, steps: state.steps, calories: state.calories };
+
+  await saveActivityToBothStorage(newActivity);
+
+  state.steps = 0;
+  state.calories = 0;
+  saveState();
+  updateUI();
+}
+
+// Display the current date
 function displayCurrentDate() {
   const today = new Date();
   currentDateEl.textContent = today.toLocaleDateString('en-US', {
@@ -107,86 +154,67 @@ function displayCurrentDate() {
   });
 }
 
-// ----------------------
 // Event Listeners
-// ----------------------
-
-// 1. Toggle Theme
 themeToggleBtn.addEventListener('click', () => {
   document.body.classList.toggle('dark-theme');
 });
 
-// 2. Live Step Input: Update the step counter display as you type
 stepInputEl.addEventListener('input', (e) => {
-  const value = parseInt(e.target.value);
-  if (!isNaN(value)) {
-    stepCountEl.textContent = value;
+  const value = parseInt(e.target.value, 10);
+  if (!isNaN(value) && value >= 0) {
+    state.steps = value;
+    updateUI();
+  } else {
+    console.error('Invalid step input:', e.target.value);
+    stepCountEl.textContent = '0'; // Fallback to default value
   }
 });
 
-// 3. Exercise Input Hover: Show available exercises from API
-exerciseInput.addEventListener('mouseover', async () => {
-  const exercises = await fetchExercises();
-  if (exercises && exercises.length > 0) {
-    alert(`Available exercises: ${exercises.map((ex) => ex.name).join(', ')}`);
-  }
-});
-
-// 4. Add Steps: Simulate adding a random number of steps
 addStepsBtn.addEventListener('click', () => {
-  const addedSteps = Math.floor(Math.random() * 1501) + 500; // Random between 500 and 2000
-  state.steps += addedSteps;
-  state.calories += Math.round(addedSteps * 0.04); // Rough calories burned estimate
-  saveState();
-  updateUI();
+  const addedSteps = Math.floor(Math.random() * 1501) + 500;
+  if (!isNaN(addedSteps) && addedSteps > 0) {
+    state.steps += addedSteps;
+    state.calories += Math.round(addedSteps * 0.04);
+    saveState();
+    updateUI();
+  }
 });
 
-// 5. Set Daily Goal
+resetStepsBtn.addEventListener('click', resetSteps);
+
 setGoalBtn.addEventListener('click', () => {
-  const goal = parseInt(goalInput.value);
-  if (goal > 0) {
+  const goal = parseInt(goalInput.value, 10);
+  if (!isNaN(goal) && goal > 0) {
     state.dailyGoal = goal;
     saveState();
     updateUI();
-    goalInput.value = '';
+    goalInput.value = ''; // Clear input field
   } else {
     alert('Please enter a valid daily goal.');
   }
 });
 
-// 6. Calculate Exercise Calories using API data
 calculateExerciseBtn.addEventListener('click', async () => {
   const exerciseName = exerciseInput.value.trim().toLowerCase();
-  const duration = parseInt(durationInput.value);
+  const duration = parseInt(durationInput.value, 10);
   if (!exerciseName || isNaN(duration) || duration <= 0) {
     alert('Please enter valid exercise details.');
     return;
   }
   const exercises = await fetchExercises();
-  const match = exercises.find((e) => e.name.toLowerCase() === exerciseName);
+  const match = exercises.find(e => e.name.toLowerCase() === exerciseName);
   if (match) {
     const caloriesBurned = (match.calories / match.duration) * duration;
     displayExerciseResults(match, duration, caloriesBurned);
+    state.calories += Math.round(caloriesBurned);
+    saveState();
+    updateUI();
   } else {
     alert('Exercise not found in the database.');
   }
 });
 
-// 7. Reset Steps: Log today’s activity to the history and reset counters
-resetStepsBtn.addEventListener('click', async () => {
-  const today = new Date().toLocaleDateString('en-US');
-  const newActivity = { date: today, steps: state.steps, calories: state.calories };
-  // Save to API
-  await saveActivity(newActivity);
-  // Also update local state history
-  state.history.push(newActivity);
-  state.steps = 0;
-  state.calories = 0;
-  saveState();
-  updateUI();
-});
-
-// Utility: Display exercise calculation results
+// Display exercise calculation results
 function displayExerciseResults(exercise, duration, caloriesBurned) {
   exerciseResultsEl.innerHTML = `
     <h3>Exercise: ${exercise.name}</h3>
@@ -194,16 +222,14 @@ function displayExerciseResults(exercise, duration, caloriesBurned) {
     <p>Estimated Calories Burned: ${caloriesBurned.toFixed(1)}</p>
     <p>(Based on ${exercise.calories} calories per ${exercise.duration} minutes)</p>
   `;
-  // Add the calculated calories to the overall calorie counter
   state.calories += Math.round(caloriesBurned);
   saveState();
   updateUI();
 }
 
-// ----------------------
-// Initialize the App
-// ----------------------
-document.addEventListener('DOMContentLoaded', () => {
+// Initialize the app
+document.addEventListener('DOMContentLoaded', async () => {
+  await syncData();
   loadState();
   updateUI();
   displayCurrentDate();

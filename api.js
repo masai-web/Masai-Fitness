@@ -1,11 +1,10 @@
-// api.js
 const API_URL = 'http://localhost:3000';
 
 // Fetch exercises from the local API
 export async function fetchExercises() {
   try {
     const response = await fetch(`${API_URL}/exercises`);
-    if (!response.ok) throw new Error(response.statusText);
+    if (!response.ok) throw new Error(`Error fetching exercises: ${response.status}`);
     return await response.json();
   } catch (error) {
     console.error('Error fetching exercises:', error);
@@ -21,18 +20,18 @@ export async function saveActivity(activity) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(activity),
     });
-    if (!response.ok) throw new Error(response.statusText);
+    if (!response.ok) throw new Error(`Error saving activity: ${response.status}`);
     return await response.json();
   } catch (error) {
     console.error('Error saving activity:', error);
   }
 }
 
-// Fetch activity history
+// Fetch activity history from the local API
 export async function fetchHistory() {
   try {
     const response = await fetch(`${API_URL}/history`);
-    if (!response.ok) throw new Error(response.statusText);
+    if (!response.ok) throw new Error(`Error fetching history: ${response.status}`);
     return await response.json();
   } catch (error) {
     console.error('Error fetching history:', error);
